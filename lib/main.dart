@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "screens/characterlist.dart";
 
 void main() {
   runApp(
@@ -23,17 +24,53 @@ class LandingScreen extends StatelessWidget
 
             body: ListView(
                 children: [
-                    CircleAvatar(child: Image.asset("assets/images/characters.png"), radius: 80),
-                    Center( child: Text("personagens", style: TextStyle(fontSize: 20)),),
-                    CircleAvatar(child: Image.asset("assets/images/locations.png"), radius: 80),
-                    Center( child: Text("lugares", style: TextStyle(fontSize: 20)),),
-                    CircleAvatar(child: Image.asset("assets/images/episodes.png"), radius: 80),
-                    Center( child: Text("episodios", style: TextStyle(fontSize: 20)),),
-
+                    ButtonImage(imgPath: "assets/images/characters.png", btnText: "personagens"),
+                    ButtonImage(imgPath: "assets/images/locations.png", btnText: "locais"),
+                    ButtonImage(imgPath: "assets/images/episodes.png", btnText: "episodios"),
                 ]
             ),
 
 
         );
      } 
+}
+
+
+
+
+class ButtonImage extends StatelessWidget
+{
+
+    String imgPath;
+    String btnText;
+
+    ButtonImage
+    ({
+        required this.imgPath,
+        required this.btnText,
+    });
+
+    @override
+      Widget build(BuildContext context) {
+        return Column(
+            children: [
+
+                GestureDetector(
+                    onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => CharacterList()),
+                        );
+                    }, 
+                    child: CircleAvatar(
+                        child: Image.asset(imgPath),
+                        radius: 80)),
+
+                Center( 
+                    child: Text(btnText, style: TextStyle(fontSize: 20)),
+                ),
+
+            ],
+        );
+      }
 }
