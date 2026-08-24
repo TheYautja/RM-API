@@ -1,76 +1,94 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 import "screens/characterlist.dart";
+import "screens/LocationList.dart";
+import "screens/EpisodesList.dart";
 
 void main() {
   runApp(
     MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: LandingScreen(),
-    )
+    ),
   );
 }
 
+class LandingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Rick and Morty"),
+      ),
 
+      body: ListView(
+        children: [
+          ButtonImage(
+            imgPath: "assets/images/characters.png",
+            btnText: "Personagens",
+            destination: CharacterList(),
+          ),
 
-class LandingScreen extends StatelessWidget 
-{
-   @override
-     Widget build(BuildContext context)
-     {
-        return Scaffold(
-            
-            appBar: AppBar(
-                title: Text("appbar máxima"),
-            ),
+          ButtonImage(
+            imgPath: "assets/images/locations.png",
+            btnText: "Locais",
+            destination: LocationList(),
+          ),
 
-            body: ListView(
-                children: [
-                    ButtonImage(imgPath: "assets/images/characters.png", btnText: "personagens"),
-                    ButtonImage(imgPath: "assets/images/locations.png", btnText: "locais"),
-                    ButtonImage(imgPath: "assets/images/episodes.png", btnText: "episodios"),
-                ]
-            ),
-
-
-        );
-     } 
+          ButtonImage(
+            imgPath: "assets/images/episodes.png",
+            btnText: "Episódios",
+            destination: EpisodesList(),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
+class ButtonImage extends StatelessWidget {
+  final String imgPath;
+  final String btnText;
+  final Widget? destination;
 
+  ButtonImage({
+    required this.imgPath,
+    required this.btnText,
+    required this.destination,
+  });
 
-
-class ButtonImage extends StatelessWidget
-{
-
-    String imgPath;
-    String btnText;
-
-    ButtonImage
-    ({
-        required this.imgPath,
-        required this.btnText,
-    });
-
-    @override
-      Widget build(BuildContext context) {
-        return Column(
-            children: [
-
-                GestureDetector(
-                    onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CharacterList()),
-                        );
-                    }, 
-                    child: CircleAvatar(
-                        child: Image.asset(imgPath),
-                        radius: 80)),
-
-                Center( 
-                    child: Text(btnText, style: TextStyle(fontSize: 20)),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () {
+            if (destination != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => destination!,
                 ),
+              );
+            }
+          },
 
-            ],
-        );
-      }
+          child: CircleAvatar(
+            radius: 80,
+            child: Image.asset(imgPath),
+          ),
+        ),
+
+        Center(
+          child: Text(
+            btnText,
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
+        ),
+
+        SizedBox(height: 20),
+      ],
+    );
+  }
 }

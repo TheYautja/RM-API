@@ -47,7 +47,7 @@ class CharacterResponse
     {
         return CharacterResponse
         (
-            info: json['info'],
+            info: Info.fromJson(json['info']),
             result: List<Character>.from(
                 json['results'].map((x) => Character.fromJson(x)),
             ),
