@@ -3,67 +3,168 @@ import "package:http/http.dart" as http;
 import "../model/character.dart";
 import "dart:convert";
 
-class CharacterList extends StatelessWidget
+
+
+class CharacterList extends StatefulWidget
 {
 
-    Future<List<Character>> PageData() async
+    @override
+    State<CharacterList> createState() => _CharacterListState();
+
+
+}
+
+
+
+class _CharacterListState extends State<CharacterList>
+{
+
+    ScrollController _scrollController = ScrollController();
+    final List<Character> personagens = [];
+    int pageIndex = 1;
+    bool loading = false;
+    bool end = false;
+
+
+    @override
+    void initState()
     {
-        final response = await http.get(Uri.parse("https://rickandmortyapi.com/api/character?page=1"));
+        super.initState();
+
+        _scrollController.addListener
+        (
+            (){
+                final pos = _scrollController.position;
+                if(pos.pixels >= pos.maxScrollExtent - 200)
+                {
+                    loadPage();
+                }
+            }
+        );
+
+        loadPage();
+    }
+
+
+    Future<void> loadPage() async
+    {
+        if(loading || end) return;
+
+        setState
+        (
+            (){
+                loading = true;
+            }
+        );
+
+        try
+        {
+            final newP = await PageData(pageIndex);
+
+            if(!mounted) return;
+
+            setState
+            (
+                (){
+                    personagens.addAll(newP);
+                    pageIndex++;
+                    loading = false;
+
+                    if(newP.isEmpty || pageIndex > 42)
+                    {
+                        end = true;
+                    }
+                }
+            );
+        }
+        catch(e)
+        {
+            if(!mounted) return;
+
+            setState
+            (
+                (){
+                    loading = false;
+                }
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar
+            (
+                SnackBar(content: Text("devagar caralho"))
+            );
+        }
+    }
+
+
+    Future<List<Character>> PageData(int page) async
+    {
+        final response = await http.get(Uri.parse("https://rickandmortyapi.com/api/character?page=${page}"));
 
         if(response.statusCode == 200)
         {
-           return CharacterResponse.fromJson(json.decode(response.body)).result; 
-        } else 
+           return CharacterResponse.fromJson(json.decode(response.body)).result;
+        } else
         {
             throw Exception("falha no GET");
         }
     }
-    
+
+
     @override
-      Widget build(BuildContext context) {
-        
+    void dispose()
+    {
+        _scrollController.dispose();
+        super.dispose();
+    }
+
+
+    @override
+    Widget build(BuildContext context) {
+
         return Scaffold
         (
             appBar: AppBar(title: Text("lista maxima")),
-            body: FutureBuilder(
-                future: PageData(),
-                builder: (context, snapshot){
-                    switch(snapshot.connectionState){
-                        
-                        case ConnectionState.none:
-                        return AlertDialog(title: Text("sem internet D:"),);
+            body: personagens.isEmpty && loading
+                ? Center
+                (
+                    child: CircularProgressIndicator()
+                )
+                : ListView.builder
+                (
+                    controller: _scrollController,
+                    itemCount: personagens.length + (loading ? 1 : 0),
+                    itemBuilder: (context, index){
 
-                        case ConnectionState.waiting:
-                        case ConnectionState.active:
-                        return CircularProgressIndicator();
-
-                        case ConnectionState.done:
-                        if(!snapshot.hasData){
-                            return Text("sem dados");
-                        } else {
-                            List<Character> listaPersonagens = snapshot.data as List<Character>;
-                             
-                            return ListView.builder(itemCount: listaPersonagens.length,  itemBuilder: (context, index){
-                                return ListTile(
-                                    leading: CircleAvatar(backgroundImage: NetworkImage(listaPersonagens[index].image),),
-                                    title: Text(listaPersonagens[index].name),
-                                    subtitle: Row(
-                                        children: [
-                                            Icon(Icons.circle, size: 10.0, color: (
-                                                listaPersonagens[index].status == "Alive" ? Colors.green : Colors.red)
-                                            ),
-                                            Text(
-                                                listaPersonagens[index].status == "Alive" ? "Vivo" : "Morto",
-                                            ),
-                                        ]
-                                    ),
-
-                                );
-                            });
+                        if(index == personagens.length)
+                        {
+                            return Padding
+                            (
+                                padding: EdgeInsets.all(16),
+                                child: Center
+                                (
+                                    child: CircularProgressIndicator()
+                                ),
+                            );
                         }
+
+                        return ListTile(
+                            leading: CircleAvatar(backgroundImage: NetworkImage(personagens[index].image),),
+                            title: Text(personagens[index].name),
+                            subtitle: Row(
+                                children: [
+                                    Icon(Icons.circle, size: 10.0, color: (
+                                        personagens[index].status == "Alive" ? Colors.green : Colors.red)
+                                    ),
+                                    Text(
+                                        personagens[index].status == "Alive" ? "Vivo" : "Morto",
+                                    ),
+                                ]
+                            ),
+
+                        );
                     }
-                },
-            ),
+                ),
         );
-      }
+    }
 }
+
